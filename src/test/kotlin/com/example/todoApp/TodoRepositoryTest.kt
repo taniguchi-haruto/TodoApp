@@ -16,8 +16,8 @@ class TodoRepositoryTest(@Autowired val todoRepository: TodoRepository) {
     @Test
     fun TodoObjの保存ができる(
     ) {
-        val todo1 = Todo(123, "john")
-        val todo2 = Todo(456, "jay")
+        val todo1 = Todo( 0, "john")
+        val todo2 = Todo(0, "jay")
         todoRepository.save(todo1) // ORM Object Relation Mapping
         todoRepository.save(todo2)
 

@@ -4,6 +4,8 @@ package com.example.todoApp
 import org.junit.jupiter.api.Test
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.not
+import org.junit.jupiter.api.AfterEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -11,6 +13,8 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import java.awt.image.TileObserver
+import kotlin.test.todo
 
 // port = random()
 // server = new TomcatServer(port)
@@ -18,9 +22,15 @@ import org.springframework.http.ResponseEntity
 // testapp = new TodoAppApplicationTest(restTemplate, port)
 // testapp.GETリクエストはOKステータスを返す()
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+	webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+	properties = [
+		"spring.jpa.hibernate.ddl-auto: create-drop"
+	]
+)
 class TodoAppApplicationTests (
 	@Autowired val restTemplate: TestRestTemplate,
+	@Autowired val todoRepository: TodoRepository,
 	@LocalServerPort val port: Int
 )
 {
@@ -32,6 +42,11 @@ class TodoAppApplicationTests (
 //		this.port = port
 //		println("constructor: restTemplate=$restTemplate, port=$port")
 //	}
+
+	@AfterEach
+	fun cleanUp() {
+		todoRepository.deleteAll()
+	}
 
 	@Test
 	fun contextLoads() {
@@ -49,6 +64,11 @@ class TodoAppApplicationTests (
 	@Test
 	fun `GETリクエストはTodoオブジェクトのリストを返す`() {
 		// localhost/todos に GETリクエストを送り、レスポンスを Todoオブジェクトの配列として解釈する。
+		val todo1 = Todo(1, "foo")
+		val todo2 = Todo(2, "bar")
+		todoRepository.save(todo1)
+		todoRepository.save(todo2)
+
 		val response: ResponseEntity<Array<Todo>> = restTemplate.getForEntity("http://localhost:$port/todos", Array<Todo>::class.java)
 		// レスポンスの Content-Type は application/json であること。
 		assertThat(response.headers.contentType, equalTo(MediaType.APPLICATION_JSON))
@@ -56,12 +76,44 @@ class TodoAppApplicationTests (
 		val todos = response.body!!
 		assertThat(todos.size, equalTo(2))
 		// 最初の要素は id=1 であり、text が "foo" であること。
-		assertThat(todos[0].id, equalTo(1))
-		assertThat(todos[0].text, equalTo("foo"))
+		assertThat(todos[0].id, equalTo(todo1.id))
+		assertThat(todos[0].text, equalTo(todo1.text))
 		// 次の要素は id=2 であり、text が "bar" であること。
-		assertThat(todos[1].id, equalTo(2))
-		assertThat(todos[1].text, equalTo("bar"))
+		assertThat(todos[1].id, equalTo(todo2.id))
+		assertThat(todos[1].text, equalTo(todo2.text))
 	}
 
+//	@Test
+//	fun `todoObjを一つ返す`() {
+//		// localhost/todos に GETリクエストを送り、レスポンスを Todoオブジェクトの配列として解釈する。
+//		val todo1 = Todo(3, "foo")
+//		todoRepository.save(todo1)
+//
+//		val response: ResponseEntity<Array<Todo>> = restTemplate.getForEntity("http://localhost:$port/todos", Array<Todo>::class.java)
+//		// 配列は2つの要素をもつこと。
+//		val todos = response.body!!
+//		assertThat(todos.size, equalTo(1))
+//		// 最初の要素は id=1 であり、text が "foo" であること。
+//		assertThat(todos[0].id, equalTo(todo1.id))
+//		assertThat(todos[0].text, equalTo(todo1.text))
+//	}
 
+	@Test
+	fun `POSTリクエストはOKステータスを返す`(){
+		val todos1 = Todo(0,"test")
+		val response = restTemplate.postForEntity("http://localhost:$port/todos",todos1, String::class.java)
+//		println("response.statusCode=${response.statusCode}, httpStatus.OK=${HttpStatus.OK}")
+		assertThat(response.statusCode, equalTo(HttpStatus.OK))
+	}
+	@Test
+	fun `POSTリクエストしたらデータが保存されている`(){
+		todoRepository.deleteAll()
+		val todos1 = Todo(0,"test")
+		restTemplate.postForEntity("http://localhost:$port/todos",todos1, String::class.java)
+
+		val todos:List<Todo> = todoRepository.findAll()
+		assertThat(todos.size, equalTo(1))
+		assertThat(todos[0].id, not(equalTo(0)))
+		assertThat(todos[0].text, equalTo("test"))
+	}
 }
