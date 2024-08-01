@@ -5,10 +5,10 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 
-@Entity
-class Todo(
+@Entity // this class maps to a table inside database
+class TodoEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO) // auto increment
     val id: Long = 0,
     val text: String
 )
