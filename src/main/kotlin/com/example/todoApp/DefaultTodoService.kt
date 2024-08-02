@@ -2,6 +2,7 @@ package com.example.todoApp
 
 import com.example.todoApp.dto.NewTodoRequest
 import com.example.todoApp.dto.TodoResponse
+import com.example.todoApp.dto.UpdateTodoRequest
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,5 +19,9 @@ class DefaultTodoService(val todoRepository: TodoRepository) : TodoService {
         val newTodoEntity = todoRepository.save(TodoEntity(text = newTodoRequest.text))
 
         return newTodoEntity.id
+    }
+
+    override fun update(id: Long, updateTodoRequest: UpdateTodoRequest): TodoResponse {
+        TODO("Not yet implemented")
     }
 }

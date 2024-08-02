@@ -2,8 +2,7 @@ package com.example.todoApp
 
 import com.example.todoApp.dto.NewTodoRequest
 import com.example.todoApp.dto.TodoResponse
-import com.example.todoApp.dto.UpdateTodoRequest
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.example.todoApp.testdoubles.SpyStubTodoService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -13,23 +12,23 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.http.MediaType.*
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
-class TodoControllerTest {
+class TodoControllerTestWithTestDoubles {
 
-    lateinit var mockTodoService: TodoService
+    lateinit var spyStubTodoService: SpyStubTodoService
     lateinit var mockMvc: MockMvc
-    val objectMapper = ObjectMapper()
 
     @BeforeEach
     fun setUp() {
-        mockTodoService = mockk()
-        mockMvc = MockMvcBuilders.standaloneSetup(TodoController(mockTodoService))
+        spyStubTodoService = SpyStubTodoService()
+        mockMvc = MockMvcBuilders.standaloneSetup(TodoController(spyStubTodoService))
             .build()
     }
 
@@ -38,9 +37,6 @@ class TodoControllerTest {
         @Test
         @DisplayName("GETエンドポイントはOKステータスを返す")
         fun `GET endpoint should return status OK`() {
-            every { mockTodoService.todos() } returns listOf()
-
-
             mockMvc.perform(get("/todos"))
                 .andExpect(status().isOk) // check status
         }
@@ -49,7 +45,10 @@ class TodoControllerTest {
         @DisplayName("GETリクエストはtodoObjのリストを返す")
         fun `GET endpoint should return list of Todo`() {
             val todoResponse = TodoResponse(1, "Learn Kotlin")
-            every { mockTodoService.todos() } returns listOf(todoResponse)
+
+            // need to set up stub
+            spyStubTodoService.stubForTodos(listOf(todoResponse))
+
             val expectedJson = """
             [
                 {
@@ -67,13 +66,11 @@ class TodoControllerTest {
         @Test
         @DisplayName("GETリクエストはtodoServiceからtodos()を返す")
         fun `GET endpoint should call todoService todos()`() {
-            every { mockTodoService.todos() } returns listOf() // return type of findAll() is List<TodoEntity>
-
-
             mockMvc.perform(get("/todos"))
 
 
-            verify { mockTodoService.todos() }
+            assertThat(spyStubTodoService.todosCalled, equalTo(true))
+            assertThat(spyStubTodoService.todosCalledTimes, equalTo(1))
         }
     }
 
@@ -82,7 +79,6 @@ class TodoControllerTest {
         @Test
         @DisplayName("POSTエンドポイントはCREATEDステータスを返す")
         fun `POST endpoint should return status CREATED`() {
-            every { mockTodoService.create(any()) } returns 999
             val requestBodyJson = """
             {
                 "text": ""
@@ -90,19 +86,16 @@ class TodoControllerTest {
         """.trimIndent()
 
 
-            mockMvc.perform(
-                post("/todos")
-                    .content(requestBodyJson)
-                    .contentType(APPLICATION_JSON)
-            )
+            mockMvc.perform(post("/todos")
+                .content(requestBodyJson)
+                .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated) // check status
         }
 
         @Test
         @DisplayName("POSTリクエストはtodoServiceにcreate()を返す")
         fun `POST endpoint should call todoService create()`() {
-            val todoRequest = NewTodoRequest("Learn Kotlin")
-            every { mockTodoService.create(todoRequest) } returns 999
+            val todoRequest = NewTodoRequest( "Learn Kotlin")
 
             val requestBodyJson = """
             {
@@ -111,22 +104,22 @@ class TodoControllerTest {
         """.trimIndent()
 
 
-            mockMvc.perform(
-                post("/todos")
-                    .content(requestBodyJson)
-                    .contentType(APPLICATION_JSON)
-            )
+            mockMvc.perform(post("/todos")
+                .content(requestBodyJson)
+                .contentType(APPLICATION_JSON))
 
 
-            verify { mockTodoService.create(todoRequest) }
+            assertThat(spyStubTodoService.createCalled, equalTo(true))
+            assertThat(spyStubTodoService.createCalledTimes, equalTo(1))
         }
 
         @Test
-        @DisplayName("POSTエンドポイントは新しいIDを返す")
+        @DisplayName ("POSTエンドポイントは新しいIDを返す")
         fun `POST endpoint should return the created ID`() {
             val newId: Long = 9999
 
-            every { mockTodoService.create(any()) } returns newId
+            // need to set up stub
+            spyStubTodoService.stubForCreate(newId)
 
             val requestBodyJson = """
             {
@@ -135,11 +128,9 @@ class TodoControllerTest {
         """.trimIndent()
 
 
-            val responseBody = mockMvc.perform(
-                post("/todos")
-                    .content(requestBodyJson)
-                    .contentType(APPLICATION_JSON)
-            )
+            val responseBody = mockMvc.perform(post("/todos")
+                .content(requestBodyJson)
+                .contentType(APPLICATION_JSON))
                 .andReturn()
                 .response
                 .contentAsString
@@ -147,44 +138,5 @@ class TodoControllerTest {
 
             assertThat(responseBody, equalTo("$newId"))
         }
-    }
-
-    @Nested
-    inner class UpdateTodo {
-        @Test
-        @DisplayName("ステータスOKを返す")
-        fun `should return status OK`() {
-            every { mockTodoService.update(any(), any()) } returns TodoResponse(999, "Learn Kotlin")
-            val requestBodyJson = objectMapper.writeValueAsString(UpdateTodoRequest(""))
-
-
-            mockMvc.perform(
-                put("/todos/999")
-                    .content(requestBodyJson)
-                    .contentType(APPLICATION_JSON)
-            )
-                .andExpect(status().isOk)
-        }
-
-        @Test
-        @DisplayName("todoServiceのupdate()を呼び出す")
-        fun `should call todoService update()`() {
-            val updateRequest = UpdateTodoRequest("Learn Kotlin")
-            every { mockTodoService.update(999, updateRequest) } returns TodoResponse(999, "Learn Kotlin")
-
-            val requestBodyJson = objectMapper.writeValueAsString(updateRequest)
-
-
-            mockMvc.perform(
-                put("/todos/999")
-                    .content(requestBodyJson)
-                    .contentType(APPLICATION_JSON)
-            )
-
-
-            verify { mockTodoService.update(999, updateRequest) }
-        }
-
-        // TODO - return value test
     }
 }
