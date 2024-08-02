@@ -7,7 +7,7 @@ class SampleTest {
     @Test
     fun `call printHello()`() {
         // we need an instance
-        val a = Sample(false) // constructor
+        val a = Sample("") // constructor
         // JS: const a = new Sample()
 
 

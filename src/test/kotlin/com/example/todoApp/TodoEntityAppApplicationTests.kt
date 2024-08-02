@@ -101,7 +101,7 @@ class TodoEntityAppApplicationTests (
 		val todos1 = TodoEntity(0,"test")
 		val response = restTemplate.postForEntity("http://localhost:$port/todos",todos1, String::class.java)
 //		println("response.statusCode=${response.statusCode}, httpStatus.OK=${HttpStatus.OK}")
-		assertThat(response.statusCode, equalTo(HttpStatus.OK))
+		assertThat(response.statusCode, equalTo(HttpStatus.CREATED))
 	}
 	@Test
 	fun `POSTリクエストしたらデータが保存されている`(){
