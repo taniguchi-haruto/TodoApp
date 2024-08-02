@@ -26,7 +26,7 @@ import org.springframework.http.ResponseEntity
 		"spring.jpa.hibernate.ddl-auto: create-drop"
 	]
 )
-class TodoEntityAppApplicationTests (
+class TodoApplicationTests (
 	@Autowired val restTemplate: TestRestTemplate,
 	@Autowired val todoRepository: TodoRepository,
 	@LocalServerPort val port: Int

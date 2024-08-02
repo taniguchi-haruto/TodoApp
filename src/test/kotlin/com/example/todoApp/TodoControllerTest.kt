@@ -1,9 +1,9 @@
 package com.example.todoApp
 
+import com.example.todoApp.dto.NewTodoRequest
 import com.example.todoApp.dto.TodoResponse
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.verify
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import org.springframework.http.MediaType.*
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -19,15 +20,15 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
-class TodoEntityControllerTest {
+class TodoControllerTest {
 
-    lateinit var mockTodoRepository: TodoRepository
+    lateinit var mockTodoService: TodoService
     lateinit var mockMvc: MockMvc
 
     @BeforeEach
     fun setUp() {
-        mockTodoRepository = mockk()
-        mockMvc = MockMvcBuilders.standaloneSetup(TodoController(mockTodoRepository))
+        mockTodoService = mockk()
+        mockMvc = MockMvcBuilders.standaloneSetup(TodoController(mockTodoService))
             .build()
     }
 
@@ -36,7 +37,7 @@ class TodoEntityControllerTest {
         @Test
         @DisplayName("GETエンドポイントはOKステータスを返す")
         fun `GET endpoint should return status OK`() {
-            every { mockTodoRepository.findAll() } returns listOf()
+            every { mockTodoService.todos() } returns listOf()
 
 
             mockMvc.perform(get("/todos"))
@@ -46,13 +47,13 @@ class TodoEntityControllerTest {
         @Test
         @DisplayName("GETリクエストはtodoObjのリストを返す")
         fun `GET endpoint should return list of Todo`() {
-            val todoEntity = TodoEntity(1, "Learn Kotlin")
-            every { mockTodoRepository.findAll() } returns listOf(todoEntity)
+            val todoResponse = TodoResponse(1, "Learn Kotlin")
+            every { mockTodoService.todos() } returns listOf(todoResponse)
             val expectedJson = """
             [
                 {
-                    "id": ${todoEntity.id},
-                    "text": "${todoEntity.text}"
+                    "id": ${todoResponse.id},
+                    "text": "${todoResponse.text}"
                 }
             ]
         """.trimIndent()
@@ -63,15 +64,15 @@ class TodoEntityControllerTest {
         }
 
         @Test
-        @DisplayName("GETリクエストはtodoリポジトリからfindAllを返す")
-        fun `GET endpoint should call todoRepository findAll()`() {
-            every { mockTodoRepository.findAll() } returns listOf() // return type of findAll() is List<TodoEntity>
+        @DisplayName("GETリクエストはtodoServiceからtodos()を返す")
+        fun `GET endpoint should call todoService todos()`() {
+            every { mockTodoService.todos() } returns listOf() // return type of findAll() is List<TodoEntity>
 
 
             mockMvc.perform(get("/todos"))
 
 
-            verify { mockTodoRepository.findAll() }
+            verify { mockTodoService.todos() }
         }
     }
 
@@ -80,7 +81,7 @@ class TodoEntityControllerTest {
         @Test
         @DisplayName("POSTエンドポイントはCREATEDステータスを返す")
         fun `POST endpoint should return status CREATED`() {
-            every { mockTodoRepository.save(any())} returns TodoEntity(999, "")
+            every { mockTodoService.create(any())} returns 999
             val requestBodyJson = """
             {
                 "text": ""
@@ -90,29 +91,29 @@ class TodoEntityControllerTest {
 
             mockMvc.perform(post("/todos")
                 .content(requestBodyJson)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated) // check status
         }
 
         @Test
-        @DisplayName("POSTリクエストはtodoリポジトリにsaveを返す")
-        fun `POST endpoint should call todoRepository save()`() {
-            val todoEntityToSave = TodoEntity(0, "Learn Kotlin")
-            every { mockTodoRepository.save(todoEntityToSave)} returns TodoEntity(999, "Learn Kotlin")
+        @DisplayName("POSTリクエストはtodoServiceにcreate()を返す")
+        fun `POST endpoint should call todoService create()`() {
+            val todoRequest = NewTodoRequest( "Learn Kotlin")
+            every { mockTodoService.create(todoRequest)} returns 999
 
             val requestBodyJson = """
             {
-                "text": "${todoEntityToSave.text}"
+                "text": "${todoRequest.text}"
             }
         """.trimIndent()
 
 
             mockMvc.perform(post("/todos")
                 .content(requestBodyJson)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(APPLICATION_JSON))
 
 
-            verify { mockTodoRepository.save(todoEntityToSave) }
+            verify { mockTodoService.create(todoRequest) }
         }
 
         @Test
@@ -120,7 +121,7 @@ class TodoEntityControllerTest {
         fun `POST endpoint should return the created ID`() {
             val newId: Long = 9999
 
-            every { mockTodoRepository.save(any()) } returns TodoEntity(newId, "")
+            every { mockTodoService.create(any()) } returns newId
 
             val requestBodyJson = """
             {
@@ -131,7 +132,7 @@ class TodoEntityControllerTest {
 
             val responseBody = mockMvc.perform(post("/todos")
                 .content(requestBodyJson)
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(APPLICATION_JSON))
                 .andReturn()
                 .response
                 .contentAsString

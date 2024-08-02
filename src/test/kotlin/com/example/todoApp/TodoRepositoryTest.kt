@@ -11,7 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
         "spring.jpa.hibernate.ddl-auto: create-drop"
     ]
 )
-class TodoEntityRepositoryTest(@Autowired val todoRepository: TodoRepository) {
+class TodoRepositoryTest(@Autowired val todoRepository: TodoRepository) {
 
     @Test
     fun TodoObjの保存ができる(

@@ -12,14 +12,11 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class TodoController(val todoRepository: TodoRepository) {
+class TodoController(val todoService: TodoService) {
 
     @GetMapping("/todos")
     fun getTodos(): List<TodoResponse> {
-        val todoEntities = todoRepository.findAll() // List<TodoEntity>
-        return todoEntities.map {
-            TodoResponse(it.id, it.text)
-        }
+        return todoService.todos() // List<TodoEntity>
     }
 
 //    @PostMapping("/todos")
@@ -30,9 +27,6 @@ class TodoController(val todoRepository: TodoRepository) {
     @PostMapping("/todos")
     @ResponseStatus(HttpStatus.CREATED)
     fun postTodo(@RequestBody newTodo: NewTodoRequest) :Long{
-
-        val todoEntity = TodoEntity(text = newTodo.text)
-        val saved = todoRepository.save(todoEntity)
-        return saved.id
+        return todoService.create(newTodo)
     }
 }
