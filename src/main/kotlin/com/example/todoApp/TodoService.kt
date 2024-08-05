@@ -11,4 +11,6 @@ interface TodoService {
     fun create(newTodoRequest: NewTodoRequest): Long
 
     fun update(id: Long, updateTodoRequest: UpdateTodoRequest): TodoResponse
+
+    fun delete(id: Long):Long
 }

@@ -215,4 +215,43 @@ class TodoControllerTest {
             assertThat(todo.text, equalTo(updateRequest.text))
         }
     }
+
+    @Nested
+    inner class DeleteTodo {
+        @Test
+        @DisplayName("OKステータスを返す")
+        fun `should return status OK`() {
+            every { mockTodoService.delete(any()) } returns 999
+
+            mockMvc.perform(delete("/todos/999"))
+                .andExpect(status().isOk)
+        }
+
+        @Test
+        @DisplayName("todoServiceのdelete()を呼び出す")
+        fun `should call todoService delete()`() {
+            val deletedId: Long = 999
+            every { mockTodoService.delete(deletedId) } returns 999
+
+
+            mockMvc.perform(delete("/todos/999"))
+
+            verify { mockTodoService.delete(deletedId) }
+        }
+
+        @Test
+        @DisplayName("デリートしたIDを返す")
+        fun `should return the deleted Id`(){
+            val deletedId: Long = 999
+            every { mockTodoService.delete(any()) } returns 999
+
+
+            val responseBody = mockMvc.perform(delete("/todos/999"))
+                .andReturn()
+                .response
+                .contentAsString
+
+            assertThat(responseBody, equalTo("$deletedId"))
+        }
+    }
 }

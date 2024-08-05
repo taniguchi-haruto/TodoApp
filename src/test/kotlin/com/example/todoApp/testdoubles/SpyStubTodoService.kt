@@ -31,6 +31,10 @@ class SpyStubTodoService : TodoService {
         TODO("Not yet implemented")
     }
 
+    override fun delete(id: Long) :Long{
+        TODO("Not yet implemented")
+    }
+
     fun stubForTodos(todos: List<TodoResponse>) {
         // set the return value of todos()
         this.todosReturnValue = todos

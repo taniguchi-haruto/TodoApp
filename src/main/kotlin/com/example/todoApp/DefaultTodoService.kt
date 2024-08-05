@@ -30,4 +30,9 @@ class DefaultTodoService(val todoRepository: TodoRepository) : TodoService {
         return TodoResponse(updated.id, updated.text)
     }
 
+    override fun delete(id: Long):Long{
+            todoRepository.deleteById(id)
+        return 888
+    }
+
 }
