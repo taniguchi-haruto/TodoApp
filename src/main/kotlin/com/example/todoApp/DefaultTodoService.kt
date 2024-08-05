@@ -3,6 +3,7 @@ package com.example.todoApp
 import com.example.todoApp.dto.NewTodoRequest
 import com.example.todoApp.dto.TodoResponse
 import com.example.todoApp.dto.UpdateTodoRequest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,6 +23,11 @@ class DefaultTodoService(val todoRepository: TodoRepository) : TodoService {
     }
 
     override fun update(id: Long, updateTodoRequest: UpdateTodoRequest): TodoResponse {
-        TODO("Not yet implemented")
+        val foundTodo: TodoEntity =
+            todoRepository.findByIdOrNull(id) ?: throw RuntimeException("no todo found for id $id")
+
+        val updated = todoRepository.save(TodoEntity(foundTodo.id, updateTodoRequest.text))
+        return TodoResponse(updated.id, updated.text)
     }
+
 }

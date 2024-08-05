@@ -4,6 +4,7 @@ import com.example.todoApp.dto.NewTodoRequest
 import com.example.todoApp.dto.TodoResponse
 import com.example.todoApp.dto.UpdateTodoRequest
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -185,6 +186,33 @@ class TodoControllerTest {
             verify { mockTodoService.update(999, updateRequest) }
         }
 
-        // TODO - return value test
+        @Test
+        @DisplayName("アップデートしたtodoを返す")
+        fun `should return updated todo`() {
+            val updateRequest = UpdateTodoRequest("Learn Kotlin")
+            every {mockTodoService.update(999, updateRequest) } returns TodoResponse(999, "Learn Kotlin")
+
+            val requestBodyJson = objectMapper.writeValueAsString(updateRequest) // UpodateTodoRequest -> json
+
+            val responseJson = mockMvc.perform(
+                put("/todos/999")
+                    .content(requestBodyJson)
+                    .contentType(APPLICATION_JSON)
+            ).andReturn()
+                .response
+                .contentAsString
+                .trimIndent()
+
+
+            // option 1
+            // assertThat(responseJson, equalTo("""{"id":999,"text":"Learn Kotlin"}""".trimIndent()))
+
+            // option 2 //
+            val todo = objectMapper.readValue<TodoResponse>(responseJson) // json -> TodoResponse
+
+
+            assertThat(todo.id, equalTo(999))
+            assertThat(todo.text, equalTo(updateRequest.text))
+        }
     }
 }

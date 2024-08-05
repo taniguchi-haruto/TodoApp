@@ -1,15 +1,14 @@
 package com.example.todoApp
 
 import com.example.todoApp.dto.NewTodoRequest
+import com.example.todoApp.dto.UpdateTodoRequest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
+import org.springframework.data.repository.findByIdOrNull
 
 class DefaultTodoServiceTest {
 
@@ -81,4 +80,62 @@ class DefaultTodoServiceTest {
         }
     }
 
+    @Nested
+    inner class Update {
+
+        @Test
+        @DisplayName("与えられたIDからtodoRepositoryのfindByIdを呼び出す")
+        fun `should call todoRepository findById with given id`() {
+            every { mockTodoRepository.findByIdOrNull(1) } returns TodoEntity(1, "")
+            every { mockTodoRepository.save(any()) } returns TodoEntity(1, "Learn Kotlin")
+
+
+            todoService.update(1, UpdateTodoRequest("Learn Kotlin"))
+
+
+            verify { mockTodoRepository.findByIdOrNull(1) }
+        }
+
+        @Test
+        @DisplayName("更新されたテキストとtodoRepositoryのsaveを呼び出す")
+        fun `should call todoRepository save with updated text`() {
+            every { mockTodoRepository.findByIdOrNull(any()) } returns TodoEntity(1, "")
+            val updatedTodo = TodoEntity(1, "Learn Kotlin")
+            every { mockTodoRepository.save(updatedTodo) } returns TodoEntity(1, "Learn Kotlin")
+
+
+            todoService.update(1, UpdateTodoRequest("Learn Kotlin"))
+
+
+            verify { mockTodoRepository.save(updatedTodo) }
+        }
+
+        @Test
+        @DisplayName("更新されたTodoを返す")
+        fun `should return updated Todo`() {
+            every { mockTodoRepository.findByIdOrNull(any()) } returns TodoEntity(1, "")
+            every { mockTodoRepository.save(any()) } returns TodoEntity(1, "Learn Kotlin")
+
+
+            val actual = todoService.update(1, UpdateTodoRequest("Learn Kotlin"))
+
+
+            assertThat(actual.id, equalTo(1))
+            assertThat(actual.text, equalTo("Learn Kotlin"))
+        }
+
+        @Test
+        @DisplayName("指定されたIDに該当するTodoが見つからない場合、エラーを返す")
+        fun `should throw an error when no Todo is found for the given ID`() {
+            every { mockTodoRepository.findByIdOrNull(any()) } returns null
+
+
+            val error = assertThrows<RuntimeException> {
+                todoService.update(1, UpdateTodoRequest(""))
+            }
+
+
+            assertThat(error.message, equalTo("no todo found for id 1"))
+        }
+    }
 }
