@@ -138,4 +138,59 @@ class DefaultTodoServiceTest {
             assertThat(error.message, equalTo("no todo found for id 1"))
         }
     }
+
+    @Nested
+    inner class Delete {
+
+        @Test
+        @DisplayName("与えられたIDからtodoRepositoryのfindByIdを呼び出す")
+        fun `should call todoRepository findById with given id`() {
+            every { mockTodoRepository.findByIdOrNull(1) } returns TodoEntity(1, "")
+            every { mockTodoRepository.delete(any())} returns Unit
+
+
+            todoService.delete(1)
+
+            verify { mockTodoRepository.findByIdOrNull(1) }
+        }
+
+        @Test
+        @DisplayName("与えられたIDからtodoRepositoryのdeleteを呼び出す")
+        fun `should call todoRepository delete with given id`() {
+            every { mockTodoRepository.findByIdOrNull(1) } returns TodoEntity(1, "Learn Kotlin")
+            val deletedTodo = TodoEntity(1, "Learn Kotlin")
+            every { mockTodoRepository.delete(deletedTodo) } returns Unit
+
+            todoService.delete(1)
+
+            verify { mockTodoRepository.delete(deletedTodo) }
+        }
+
+
+
+        @Test
+        @DisplayName("削除されたIdを返す")
+        fun `should return deleted Id`() {
+            every { mockTodoRepository.findByIdOrNull(any()) } returns TodoEntity(1, "")
+            every { mockTodoRepository.delete(any()) } returns Unit
+
+
+            val actual = todoService.delete(1)
+
+            assertThat(actual, equalTo( 1))
+        }
+
+        @Test
+        @DisplayName("指定されたIDに該当するTodoが見つからない場合、エラーを返す")
+        fun `should throw an error when no Todo is found for the given ID`() {
+            every { mockTodoRepository.findByIdOrNull(any()) } returns null
+
+
+            val error = assertThrows<RuntimeException> {
+                todoService.delete(1)
+            }
+
+            assertThat(error.message, equalTo("no todo found for id 1"))
+        }
+    }
 }
