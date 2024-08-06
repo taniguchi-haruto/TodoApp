@@ -223,6 +223,7 @@ class TodoControllerTest {
         fun `should return status OK`() {
             every { mockTodoService.delete(any()) } returns 999
 
+
             mockMvc.perform(delete("/todos/999"))
                 .andExpect(status().isOk)
         }
@@ -231,10 +232,11 @@ class TodoControllerTest {
         @DisplayName("todoServiceのdelete()を呼び出す")
         fun `should call todoService delete()`() {
             val deletedId: Long = 999
-            every { mockTodoService.delete(deletedId) } returns 999
+            every { mockTodoService.delete(deletedId) } returns deletedId
 
 
             mockMvc.perform(delete("/todos/999"))
+
 
             verify { mockTodoService.delete(deletedId) }
         }
@@ -243,13 +245,14 @@ class TodoControllerTest {
         @DisplayName("デリートしたIDを返す")
         fun `should return the deleted Id`(){
             val deletedId: Long = 999
-            every { mockTodoService.delete(any()) } returns 999
+            every { mockTodoService.delete(any()) } returns deletedId
 
 
             val responseBody = mockMvc.perform(delete("/todos/999"))
                 .andReturn()
                 .response
                 .contentAsString
+
 
             assertThat(responseBody, equalTo("$deletedId"))
         }

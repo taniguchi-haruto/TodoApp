@@ -33,7 +33,7 @@ class DefaultTodoService(val todoRepository: TodoRepository) : TodoService {
     override fun delete(id: Long):Long{
         val foundTodo: TodoEntity =
             todoRepository.findByIdOrNull(id) ?: throw RuntimeException("no todo found for id $id")
-            todoRepository.delete(TodoEntity(foundTodo.id, foundTodo.text))
+            todoRepository.deleteById(foundTodo.id)
         return foundTodo.id
     }
 
