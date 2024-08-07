@@ -8,6 +8,8 @@ interface TodoService {
 
     fun todos(): List<TodoResponse>
 
+    fun todo(id: Long):TodoResponse
+
     fun create(newTodoRequest: NewTodoRequest): Long
 
     fun update(id: Long, updateTodoRequest: UpdateTodoRequest): TodoResponse

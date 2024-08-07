@@ -79,6 +79,46 @@ class TodoControllerTest {
     }
 
     @Nested
+    inner class GetTodo {
+        @Test
+        @DisplayName("GETエンドポイントはOKステータスを返す")
+        fun `GET endpoint should return status OK`() {
+            every { mockTodoService.todo(any()) } returns TodoResponse(0, "")
+            mockMvc.perform(get("/todos/1"))
+                .andExpect(status().isOk)
+        }
+
+        @Test
+        @DisplayName("GETリクエストはtodoObjを返す")
+        fun `GET endpoint should return Todo`() {
+            val todoResponse = TodoResponse(1, "Learn Kotlin")
+            every { mockTodoService.todo(any()) } returns todoResponse
+            val expectedJson = """
+                {
+                    "id": ${todoResponse.id},
+                    "text": "${todoResponse.text}"
+                }
+        """.trimIndent()
+
+
+            mockMvc.perform(get("/todos/1"))
+                .andExpect(content().json(expectedJson))
+        }
+
+        @Test
+        @DisplayName("GETエンドポイントはtodoServiceからtodoを呼び出す")
+        fun `GET endpoint should call todoService todo()`() {
+            every { mockTodoService.todo(1) } returns TodoResponse(1, "Learn Kotlin")
+
+
+            mockMvc.perform(get("/todos/1"))
+
+
+            verify { mockTodoService.todo(1) }
+        }
+    }
+
+    @Nested
     inner class PostTodo {
         @Test
         @DisplayName("POSTエンドポイントはCREATEDステータスを返す")

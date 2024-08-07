@@ -19,6 +19,23 @@ class DefaultTodoService(val todoRepository: TodoRepository) : TodoService {
         }
     }
 
+    override fun todo(id: Long): TodoResponse {
+        val found = findTodo(id)
+        return TodoResponse(found.id, found.text)
+    }
+
+    fun findTodo(id: Long): TodoEntity {
+        val found: TodoEntity? = todoRepository.findByIdOrNull(id)
+
+        if (found == null) {
+            val err = "no todo found for id $id"
+            log.error(err)
+            throw RuntimeException(err)
+        }
+
+        return found
+    }
+
     override fun create(newTodoRequest: NewTodoRequest): Long {
         val newTodoEntity = todoRepository.save(TodoEntity(text = newTodoRequest.text))
 
@@ -26,26 +43,15 @@ class DefaultTodoService(val todoRepository: TodoRepository) : TodoService {
     }
 
     override fun update(id: Long, updateTodoRequest: UpdateTodoRequest): TodoResponse {
-        val foundTodo: TodoEntity? = todoRepository.findByIdOrNull(id)
-
-        if (foundTodo == null) {
-            val err = "no todo found for id $id"
-//            log.trace(err)
-//            log.debug(err)
-//            log.info(err)
-//            log.warn(err)
-            log.error(err)
-            throw RuntimeException(err)
-        }
+        val foundTodo = findTodo(id)
 
         val updated = todoRepository.save(TodoEntity(foundTodo.id, updateTodoRequest.text))
         return TodoResponse(updated.id, updated.text)
     }
 
-    override fun delete(id: Long):Long{
-        val foundTodo: TodoEntity =
-            todoRepository.findByIdOrNull(id) ?: throw RuntimeException("no todo found for id $id")
-            todoRepository.deleteById(foundTodo.id)
+    override fun delete(id: Long): Long {
+        val foundTodo = findTodo(id)
+        todoRepository.deleteById(foundTodo.id)
         return foundTodo.id
     }
 

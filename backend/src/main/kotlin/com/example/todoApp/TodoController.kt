@@ -5,6 +5,7 @@ import com.example.todoApp.dto.TodoResponse
 import com.example.todoApp.dto.UpdateTodoRequest
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import java.lang.IllegalStateException
 
 @RestController
 @RequestMapping("/todos")
@@ -14,6 +15,12 @@ class TodoController(val todoService: TodoService) {
     fun getTodos(): List<TodoResponse> {
         return todoService.todos() // List<TodoEntity>
     }
+
+    @GetMapping("/{id}")
+    fun getTodo(@PathVariable id: Long): TodoResponse {
+        return todoService.todo(id)
+    }
+
 
 //    @PostMapping
 //    fun postTodos() : ResponseEntity<Unit> {

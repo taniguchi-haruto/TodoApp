@@ -53,6 +53,49 @@ class DefaultTodoServiceTest {
     }
 
     @Nested
+    inner class Todo {
+        @Test
+        fun `should call todoRepository findById`() {
+            val entity = TodoEntity(1, "Learn Kotlin")
+            every { mockTodoRepository.findByIdOrNull(entity.id) } returns entity
+
+
+            todoService.todo(entity.id)
+
+
+            verify { mockTodoRepository.findByIdOrNull(entity.id) }
+        }
+
+        @Test
+        @DisplayName("todoResponseを返す")
+        fun `should return todoResponse`() {
+            val entity = TodoEntity(1, "Learn Kotlin")
+            every { mockTodoRepository.findByIdOrNull(any()) } returns entity
+
+
+            val actual = todoService.todo(entity.id)
+
+
+            assertThat(actual.id, equalTo(entity.id))
+            assertThat(actual.text, equalTo(entity.text))
+        }
+
+        @Test
+        fun `should return an error if no todo is found`() {
+            every { mockTodoRepository.findByIdOrNull(any()) } returns null
+
+
+            val error = assertThrows<RuntimeException> {
+                todoService.todo(1)
+            }
+
+
+            assertThat(error.message, equalTo("no todo found for id 1"))
+        }
+    }
+
+
+    @Nested
     inner class Create {
         @Test
         @DisplayName("todoRepositoryのsave()を呼び出せる")
