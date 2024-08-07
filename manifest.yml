@@ -1,0 +1,7 @@
+applications:
+  - name: todo-team-b
+    instances: 1 # just 1 instance of Todo app
+    memory: 1G # 1GB of RAM
+    path: ./build/libs/todo-0.0.1-SNAPSHOT.jar # path to the JAR file
+    env:
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }' # Java 21
