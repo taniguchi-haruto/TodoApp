@@ -85,7 +85,7 @@ class DefaultTodoServiceTest {
             every { mockTodoRepository.findByIdOrNull(any()) } returns null
 
 
-            val error = assertThrows<RuntimeException> {
+            val error = assertThrows<TodoNotFoundException> {
                 todoService.todo(1)
             }
 
@@ -173,7 +173,7 @@ class DefaultTodoServiceTest {
             every { mockTodoRepository.findByIdOrNull(any()) } returns null
 
 
-            val error = assertThrows<RuntimeException> {
+            val error = assertThrows<TodoNotFoundException> {
                 todoService.update(1, UpdateTodoRequest(""))
             }
 
@@ -231,7 +231,7 @@ class DefaultTodoServiceTest {
             every { mockTodoRepository.findByIdOrNull(any()) } returns null
 
 
-            val error = assertThrows<RuntimeException> {
+            val error = assertThrows<TodoNotFoundException> {
                 todoService.delete(1)
             }
 

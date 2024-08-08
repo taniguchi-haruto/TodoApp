@@ -3,14 +3,11 @@ package com.example.todoApp
 import com.example.todoApp.dto.NewTodoRequest
 import com.example.todoApp.dto.TodoResponse
 import com.example.todoApp.dto.UpdateTodoRequest
-import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
 class DefaultTodoService(val todoRepository: TodoRepository) : TodoService {
-    val log = LoggerFactory.getLogger(DefaultTodoService::class.java)
-
     override fun todos(): List<TodoResponse> {
 
         val todoEntities = todoRepository.findAll()
@@ -25,14 +22,7 @@ class DefaultTodoService(val todoRepository: TodoRepository) : TodoService {
     }
 
     fun findTodo(id: Long): TodoEntity {
-        val found: TodoEntity? = todoRepository.findByIdOrNull(id)
-
-        if (found == null) {
-            val err = "no todo found for id $id"
-            log.error(err)
-            throw RuntimeException(err)
-        }
-
+        val found = todoRepository.findByIdOrNull(id) ?: throw TodoNotFoundException("no todo found for id $id")
         return found
     }
 
