@@ -14,4 +14,7 @@ export default defineConfig({
             '/todos': 'http://localhost:8080',
         },
     },
+    build: {
+        outDir: '../backend/src/main/resources/static',
+    },
 })

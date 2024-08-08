@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { TodoClient } from './TodoClient.ts'
 import { Todo } from './TodoModel.ts'
 
@@ -9,14 +9,14 @@ interface Props {
 const App: React.FC<Props> = ({ todoClient }) => {
     const [todos, setTodos] = useState<Todo[]>([])
 
-    const fetchTodos = async () => {
+    const fetchTodos = useCallback(async () => {
         const fetchedTodos = await todoClient.getTodos()
         setTodos(fetchedTodos)
-    }
+    }, [todoClient])
 
     useEffect(() => {
         fetchTodos()
-    }, [])
+    }, [fetchTodos])
 
     return (
         <>
