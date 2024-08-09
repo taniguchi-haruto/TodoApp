@@ -49,4 +49,33 @@ describe('DefaultTodoClient Tests', () => {
             expect(spy).toHaveBeenCalledWith('/todos/1')
         })
     })
+
+    describe('postTodo Tests', () => {
+        it('should call /todos with POST', async () => {
+            const spy = vi.spyOn(axios, 'post').mockResolvedValue({
+                status: 200,
+                data: {},
+            })
+
+            const client = new DefaultTodoClient()
+            const todoText = 'aaa'
+            await client.postTodo(todoText)
+
+            expect(spy).toHaveBeenCalledWith('/todos', { text: todoText })
+        })
+
+        it('should return created id', async () => {
+            const todoId = 1
+
+            vi.spyOn(axios, 'post').mockResolvedValue({
+                status: 200,
+                data: todoId,
+            })
+
+            const client = new DefaultTodoClient()
+            const actual = await client.postTodo('birdman')
+
+            expect(actual).toBe(todoId)
+        })
+    })
 })

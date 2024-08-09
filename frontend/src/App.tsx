@@ -8,7 +8,7 @@ interface Props {
 
 const App: React.FC<Props> = ({ todoClient }) => {
     const [todos, setTodos] = useState<Todo[]>([])
-
+    const [newTodoText, setNewTodoText] = useState<string>('')
     const fetchTodos = useCallback(async () => {
         const fetchedTodos = await todoClient.getTodos()
         setTodos(fetchedTodos)
@@ -21,7 +21,28 @@ const App: React.FC<Props> = ({ todoClient }) => {
     return (
         <>
             <h1>Todo App</h1>
-
+            <input
+                placeholder="Enter task to finish"
+                value={newTodoText}
+                onChange={(word) => setNewTodoText(word.target.value)}
+            />
+            <button
+                disabled={newTodoText.trim() === ''}
+                onClick={async () => {
+                    const newId = await todoClient.postTodo(newTodoText)
+                    // option 1
+                    // const copiedTodos = [...todos]
+                    // copiedTodos.push({
+                    //     id: newId,
+                    //     text: newTodoText,
+                    // })
+                    // setTodos(copiedTodos)
+                    setTodos([...todos, { id: newId, text: newTodoText }])
+                    setNewTodoText('')
+                }}
+            >
+                Post
+            </button>
             <ul>
                 {todos.map((todo) => {
                     return (

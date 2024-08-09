@@ -8,6 +8,10 @@ export class SpyStubTodoClient implements TodoClient {
     deleteTodoCalled: boolean = false
     deleteTodoId: number = 0
 
+    postTodoCalled: boolean = false
+    postTodoText: string = ''
+    postTodoReturnValue: number = 0
+
     getTodos(): Promise<Todo[]> {
         this.getTodosCalled = true
         return Promise.resolve(this.getTodosReturnValue)
@@ -17,5 +21,11 @@ export class SpyStubTodoClient implements TodoClient {
         this.deleteTodoCalled = true
         this.deleteTodoId = id
         return Promise.resolve()
+    }
+
+    postTodo(text: string): Promise<number> {
+        this.postTodoCalled = true
+        this.postTodoText = text
+        return Promise.resolve(this.postTodoReturnValue)
     }
 }

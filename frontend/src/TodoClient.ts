@@ -4,4 +4,6 @@ export interface TodoClient {
     getTodos(): Promise<Todo[]>
 
     deleteTodo(id: number): Promise<void>
+
+    postTodo(text: string): Promise<number>
 }

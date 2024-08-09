@@ -11,4 +11,9 @@ export class DefaultTodoClient implements TodoClient {
     async deleteTodo(id: number): Promise<void> {
         await axios.delete(`/todos/${id}`)
     }
+
+    async postTodo(text: string): Promise<number> {
+        const { data } = await axios.post('/todos', { text })
+        return Promise.resolve(data)
+    }
 }

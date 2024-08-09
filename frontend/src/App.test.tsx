@@ -172,4 +172,84 @@ describe('App Tests', () => {
             expect(screen.queryByRole('button', { name: 'Delete' })).toBe(null)
         })
     })
+
+    it('should display input', () => {
+        render(<App todoClient={new SpyStubTodoClient()} />)
+
+        expect(
+            screen.getByPlaceholderText('Enter task to finish')
+        ).toBeInTheDocument()
+    })
+
+    describe('Post button Tests', () => {
+        it('should display post button', () => {
+            render(<App todoClient={new SpyStubTodoClient()} />)
+
+            const button = screen.getByRole('button', { name: 'Post' })
+            expect(button).toBeInTheDocument()
+            expect(button).toBeDisabled()
+        })
+
+        it('should enable post button when input is entered', async () => {
+            const spyStubTodoClient = new SpyStubTodoClient()
+
+            render(<App todoClient={spyStubTodoClient} />)
+
+            const input = screen.getByPlaceholderText('Enter task to finish')
+            await userEvent.type(input, 'Learn Kotlin') // user enters text
+
+            const button = screen.getByRole('button', { name: 'Post' })
+            expect(button).toBeEnabled()
+        })
+
+        it('should call postTodo when post button is clicked', async () => {
+            const spyStubTodoClient = new SpyStubTodoClient()
+
+            render(<App todoClient={spyStubTodoClient} />)
+
+            const input = screen.getByPlaceholderText('Enter task to finish')
+            await userEvent.type(input, 'Learn Kotlin')
+
+            const postButton = await screen.findByRole('button', {
+                name: 'Post',
+            })
+            await userEvent.click(postButton)
+
+            expect(spyStubTodoClient.postTodoCalled).toBe(true)
+            expect(spyStubTodoClient.postTodoText).toBe('Learn Kotlin')
+        })
+
+        it('should display created todo when post button is clicked', async () => {
+            const spyStubTodoClient = new SpyStubTodoClient()
+            spyStubTodoClient.postTodoReturnValue = 1 // stub
+            render(<App todoClient={spyStubTodoClient} />)
+
+            const input = screen.getByPlaceholderText('Enter task to finish')
+            await userEvent.type(input, 'Learn Kotlin')
+
+            const postButton = await screen.findByRole('button', {
+                name: 'Post',
+            })
+            await userEvent.click(postButton)
+
+            expect(await screen.findByText(1)).toBeInTheDocument()
+            expect(screen.getByText('Learn Kotlin')).toBeInTheDocument()
+        })
+
+        it('should clear input when post button is clicked', async () => {
+            const spyStubTodoClient = new SpyStubTodoClient()
+
+            render(<App todoClient={spyStubTodoClient} />)
+
+            const input = screen.getByPlaceholderText('Enter task to finish')
+            await userEvent.type(input, 'Learn Kotlin')
+
+            const postButton = await screen.findByRole('button', {
+                name: 'Post',
+            })
+            await userEvent.click(postButton)
+
+            expect(input).toHaveValue('')
+        })
+    })
 })
