@@ -18,8 +18,18 @@ const App: React.FC<Props> = ({ todoClient }) => {
         fetchTodos()
     }, [fetchTodos])
 
+    const onClickHandler = () => {}
+
     return (
         <>
+            <button onClick={onClickHandler}>Click me</button>
+            <button
+                onClick={() => {
+                    onClickHandler()
+                }}
+            >
+                Click me
+            </button>
             <h1>Todo App</h1>
             <input
                 placeholder="Enter task to finish"
